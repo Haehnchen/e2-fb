@@ -5,8 +5,6 @@ from Screens.MessageBox import MessageBox
 from Components.Label import Label
 
 import os,inspect
-from Plugins.Extensions.ShareMyBox.__init__ import _
-
 
 class Smb_BaseScreen(Screen):
   actions = None
@@ -124,7 +122,7 @@ class Smb_BaseEditScreen(ConfigListScreen, Screen):
   args = None
   
   skin = """
-    <screen name="ConfigListScreen" position="center,center" size="560,400" title="ShareMyBox - Settings">
+    <screen name="ConfigListScreen" position="center,center" size="560,400" title="Facebook - Settings">
       <ePixmap pixmap="skin_default/buttons/red.png" position="0,0" size="140,40" alphatest="on" />
       <ePixmap pixmap="skin_default/buttons/green.png" position="140,0" size="140,40" alphatest="on" />
       <widget source="key_red" render="Label" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1" />
@@ -145,6 +143,7 @@ class Smb_BaseEditScreen(ConfigListScreen, Screen):
     self["setupActions"] = ActionMap(["SetupActions", "ColorActions"],
     {
       "red": self.cancel,
+      "blue": self.keyBlue,
       "green": self.__SaveValues,
       "save": self.__SaveValues,
       "cancel": self.cancel,
@@ -163,6 +162,8 @@ class Smb_BaseEditScreen(ConfigListScreen, Screen):
       self.close(str(e))
       return      
 
+  def keyBlue(self):
+    pass
   
   def keyLeft(self):
     ConfigListScreen.keyLeft(self)

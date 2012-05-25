@@ -6,7 +6,7 @@ from twisted.web import client
 
 config.plugins.Facebook = ConfigSubsection()
 config.plugins.Facebook.access_token = ConfigText()
-config.plugins.Facebook.expires_in = ConfigText()
+config.plugins.Facebook.expires_on = ConfigText()
 
 
 def variable_get(name, default = None):
@@ -22,7 +22,6 @@ def variable_set(name, value):
   configfile.save()  
   
 def FacebookApi():
-  #access_token = "AAAGQn8EF2xcBAIZBqxY5SloR51vJmFgsopBLqSQouyI1ZA3QAgZB8ywMHqWnGIt6lTN0V2yHUCBpJmrtIahCa5lY8I9z5BCn33Ojz8zPLc0AMdZA4GVZB"
   access_token = variable_get('access_token')
   return FacebookGraph(access_token)
 
@@ -41,6 +40,13 @@ def GetIconName(string):
     string += '.png'
     
   return string.lower()
+
+def GrabVideoImg(url = '/tmp/facebook.jpg'):
+  ctrl = os.popen('grab -v -j 75 ' + url).read()
+  if not "Done" in ctrl:
+    raise IOError('image grabbing error')
+
+  return url
 
 def img_download(img):
   img_hash = hashlib.md5(img).hexdigest()

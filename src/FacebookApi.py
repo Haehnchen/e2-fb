@@ -1,17 +1,25 @@
 import simplejson as json
 import urllib2
-
+import os
 
 class FacebookGraphResponse(object):
 
   response_array = {}
-  
+ 
   def __init__(self, content = None):
     if content is not None: 
       self.response_array = json.loads(content)
+      self.checkError();
+
+  def checkError(self):
+    if not self.error() is None:
+      raise Exception(str(self.error().get('message')))
 
   def data(self):
     return self.response_array['data']
+
+  def error(self):
+    return self.response_array.get('error')
 
   def setDataArray(self, ar):
     self.response_array = ar
@@ -28,6 +36,8 @@ class FacebookGraph(object):
  
   fb_url = "https://graph.facebook.com/"
   fb_profil_img = 'http://graph.facebook.com/%s/picture?type=square'
+  
+  request_handler = 'curl'
   
   def __init__(self, access_token):
     self.access_token = access_token
@@ -47,12 +57,37 @@ class FacebookGraph(object):
 
   def _friend_img(self, id):
     return self.fb_profil_img % id
-    
       
   def _url(self, link):
     return self.fb_url + link + '?access_token=' + self.access_token
     
+  def postImage(self, img, msg = ''):
+    if not os.path.exists(img):
+      raise IOError('Img not found:' + str(img))
+      
+    url = self._url("me/photos")
+    
+    if self.request_handler is 'curl':
+      response = self._cmd("-F 'source=@/%s' -F 'message=%s' %s" % (img, msg, url))
+      return FacebookGraphResponse(response)
+    else:
+      raise IOError('only curl support current')
+    
+    
+    
+  def _cmd(self, cmd):
+    test = os.popen('curl -s -k ' + cmd).read()
+    print 'curl -s -k ' + cmd
+    print test
+    return test
+    
+  def LongLifeToken(self):
+    pass    
+    
   def _request(self, url):
-      req = urllib2.Request(url)
-      return  str(urllib2.urlopen(req).read())
+    if self.request_handler is "curl":
+      return self._cmd(url)
+    
+    req = urllib2.Request(url)
+    return  str(urllib2.urlopen(req).read())
     

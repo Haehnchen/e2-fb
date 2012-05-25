@@ -15,7 +15,7 @@ import FacebookHelper
 
 class FB_Wall_MainMenu(Smb_BaseListScreen):
   backToMainMenu = True
-  title = _("Your Channellists")
+  title = _("Your Wall")
   
   def build(self):
      

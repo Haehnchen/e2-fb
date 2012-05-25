@@ -12,7 +12,7 @@ import FacebookHelper
 class FB_MainMenu(Screen):
 
   skin = """
-  <screen name="Smb_MainMenu" position="center,center" size="460,400" title="ShareMyBox - Main Menu" >
+  <screen name="Smb_MainMenu" position="center,center" size="460,400" title="Facebook - Main Menu" >
     <widget name="myMenu" position="10,10" size="420,370" scrollbarMode="showOnDemand" />
     <widget name="Statusbar" position="10,387" size="530,20" font="Regular;13"/>
   </screen>
@@ -20,29 +20,15 @@ class FB_MainMenu(Screen):
   """
 
   def buildlist(self):
-  
-    #private_key = variable_get('privatekey')
-    #if private_key is not None:
-    #  UserInfo().SetPrivateKey(private_key)
-      
-    #try:
-    #  box = Request().BoxDetails().GetList()
-    #  if box.has_key('uid'):
-    #    UserInfo().SetUid(box['uid'])
-    #except Exception as e:
-    #  UserInfo().Reset()
-    #  self.SetMessage(str(e))
 
-    #list = []
+    if FacebookHelper.variable_get('access_token', None) is None:
+      self.SetMessage('Please register your box to Facebook App!')
     
-    #png = LoadPixmap(resolveFilename(SCOPE_SKIN_IMAGE, "skin_default/icons/plugin.png"))
-    access = LoadPixmap(FacebookHelper.GetIcon('access'))
-    #print png
-
     api = []
-  
+    api.append({'name': _("Upload Screen"), 'description': _('Upload current video screenshot with event info'), 'func': self.actions.postimage, 'icon': 'post'})
     api.append({'name': _("Friends"), 'description': _('Your Friends'), 'func': self.actions.Friends, 'icon': 'friends'})
     api.append({'name': _("Wall"), 'description': _('FB Wall'), 'func': self.actions.Wall, 'icon': 'wall'})
+    
    
     list = []
     
@@ -71,6 +57,13 @@ class FB_MainMenu(Screen):
   def cancel(self):
     print "\n[MyMenu] cancel\n"
     self.close(None)
+
+  def MsgCallback(self, back = None):
+    self.SetMessage()
+    if back is None:
+      return
+    
+    self.SetMessage(str(back))
 
   def __init__(self, session, args = 0):
     self.session = session
@@ -118,6 +111,7 @@ class FB_MainMenu(Screen):
       return
           
     except Exception, e:
+      self.SetMessage(str(e))
       print 'Error:', e        
 
   class actions(object):
@@ -132,5 +126,12 @@ class FB_MainMenu(Screen):
     def Wall(YourScreen, item):
       import FacebookScreenWall
       reload(FacebookScreenWall)
-      YourScreen.session.open(FacebookScreenWall.FB_Wall_MainMenu)      
+      YourScreen.session.open(FacebookScreenWall.FB_Wall_MainMenu)     
+      
+    @staticmethod
+    def postimage(YourScreen, item):
+      import FacebookScreenGrabImage
+      reload(FacebookScreenGrabImage)
+      YourScreen.session.openWithCallback(YourScreen.MsgCallback, FacebookScreenGrabImage.FB_GrabImage_MainMenu)
+ 
   

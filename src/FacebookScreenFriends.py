@@ -16,7 +16,7 @@ from twisted.web import client
 
 class FB_Friends_MainMenu(Smb_BaseListScreen):
   backToMainMenu = True
-  title = _("Your Channellists")
+  title = _("Your Friends")
   
   list = []
   
@@ -54,16 +54,6 @@ class FB_Friends_MainMenu(Smb_BaseListScreen):
     
     list = []
 
-    #png = boxwrapper.Icon("channellist_list")
-    
-   
-    try:
-      import ssl
-    except ImportError:
-      self.ErrorException("error: no ssl support")
-      return
-    
-
     try:
       friends = FacebookHelper.FacebookApi().getFriendsFormated().data()
     except Exception as e:
@@ -82,11 +72,11 @@ class FB_Friends_MainMenu(Smb_BaseListScreen):
 
         #FacebookHelper.url_img_ext(img)
         to = '/tmp/' + img_hash + '.' + 'jpg' 
-        if os.path.exists(to) is None:
-          client.downloadPage(img, to)      
+        if os.path.exists(to) is False:
+          print 'Download: ' + img
+          client.downloadPage(img, to)
 
-        if os.path.exists(to):
-          print to
+        if os.path.exists(to) is True:
           profile_img = LoadPixmap(to)
 
       list.append([
