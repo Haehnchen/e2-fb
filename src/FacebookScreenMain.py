@@ -28,6 +28,7 @@ class FB_MainMenu(Screen):
     api.append({'name': _("Upload Screen"), 'description': _('Upload current video screenshot with event info'), 'func': self.actions.postimage, 'icon': 'post'})
     api.append({'name': _("Friends"), 'description': _('Your Friends'), 'func': self.actions.Friends, 'icon': 'friends'})
     api.append({'name': _("Wall"), 'description': _('FB Wall'), 'func': self.actions.Wall, 'icon': 'wall'})
+    api.append({'name': _("Settings"), 'description': _('Some settings'), 'func': self.actions.Settings, 'icon': 'settings'})
     
    
     list = []
@@ -133,5 +134,10 @@ class FB_MainMenu(Screen):
       import FacebookScreenGrabImage
       reload(FacebookScreenGrabImage)
       YourScreen.session.openWithCallback(YourScreen.MsgCallback, FacebookScreenGrabImage.FB_GrabImage_MainMenu)
- 
+
+    @staticmethod
+    def Settings(YourScreen, item):
+      import FacebookScreenSettings
+      reload(FacebookScreenSettings)
+      YourScreen.session.openWithCallback(YourScreen.MsgCallback, FacebookScreenSettings.FB_Settings_MainMenu) 
   

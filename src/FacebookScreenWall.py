@@ -52,7 +52,7 @@ class FB_Wall_MainMenu(Smb_BaseListScreen):
     try:
       wall = FacebookHelper.FacebookApi().getWall().data()
     except Exception as e:
-      self.ErrorException(e)
+      self.ErrorException(str(e))
       return
     
     dummy_img = LoadPixmap(FacebookHelper.GetIconPath() + '/dummy.jpg')

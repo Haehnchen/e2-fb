@@ -42,6 +42,9 @@ class FacebookGraph(object):
   def __init__(self, access_token):
     self.access_token = access_token
   
+  def setRequestHandler(self, value):
+    self.request_handler = value
+  
   def getFriends(self):
     return FacebookGraphResponse(self._request(self._url("me/friends")))
     

@@ -1,4 +1,4 @@
-from Components.config import config, ConfigSubsection, configfile, ConfigText
+from Components.config import config, ConfigSubsection, configfile, ConfigText, ConfigYesNo
 from FacebookApi import FacebookGraph
 import os
 import hashlib
@@ -7,6 +7,7 @@ from twisted.web import client
 config.plugins.Facebook = ConfigSubsection()
 config.plugins.Facebook.access_token = ConfigText()
 config.plugins.Facebook.expires_on = ConfigText()
+config.plugins.Facebook.external_curl = ConfigYesNo()
 
 
 def variable_get(name, default = None):
@@ -23,7 +24,15 @@ def variable_set(name, value):
   
 def FacebookApi():
   access_token = variable_get('access_token')
-  return FacebookGraph(access_token)
+  if access_token  is None:
+    raise Exception('unkown access_token')
+  
+  api = FacebookGraph(access_token)
+  
+  if bool(variable_get('external_curl', True)) is False:
+    api.setRequestHandler('')
+  
+  return api
 
 def GetIconPath():
   return os.path.dirname(os.path.realpath(__file__)) + '/icons/'

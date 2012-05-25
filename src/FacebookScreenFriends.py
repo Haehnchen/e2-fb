@@ -57,7 +57,7 @@ class FB_Friends_MainMenu(Smb_BaseListScreen):
     try:
       friends = FacebookHelper.FacebookApi().getFriendsFormated().data()
     except Exception as e:
-      self.ErrorException(e)
+      self.ErrorException(str(e))
       return
     
     for x in friends:
