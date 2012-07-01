@@ -36,6 +36,7 @@ class FacebookGraph(object):
  
   fb_url = "https://graph.facebook.com/"
   fb_profil_img = 'http://graph.facebook.com/%s/picture?type=square'
+  fb_profil_img_large = 'http://graph.facebook.com/%s/picture?type=large'
   
   request_handler = 'curl'
   
@@ -55,11 +56,15 @@ class FacebookGraph(object):
     friends = FacebookGraphResponse(self._request(self._url("me/friends"))).raw()
     for i,v in enumerate(friends['data']):
       friends['data'][i]['img'] = self._friend_img(int(v['id']))
+      friends['data'][i]['img_large'] = self._friend_img(int(v['id']), 'large')
       
     return FacebookGraphResponse().setDataArray(friends)   
 
-  def _friend_img(self, id):
-    return self.fb_profil_img % id
+  def _friend_img(self, id, type = 'square'):
+    if type is 'square':
+      return self.fb_profil_img % id
+    if type is 'large':
+      return self.fb_profil_img_large % id
       
   def _url(self, link):
     return self.fb_url + link + '?access_token=' + self.access_token

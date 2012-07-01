@@ -100,6 +100,16 @@ class FB_MainMenu(Screen):
 
   def go(self):
     
+    returnItems = self["myMenu"].l.getCurrentSelection()[0]
+    returnValue = returnItems['func']
+      
+    if returnItems.has_key('needaccess') and self.itemaccess(returnItems['needaccess']) is False:
+      self.SetMessage('no access')
+      return    
+      
+    returnValue(self, returnItems)
+    return    
+    
     try:
       returnItems = self["myMenu"].l.getCurrentSelection()[0]
       returnValue = returnItems['func']

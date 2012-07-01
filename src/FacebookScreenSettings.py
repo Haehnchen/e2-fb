@@ -21,7 +21,6 @@ class FB_Settings_MainMenu(Smb_BaseEditScreen):
     return list
   
   def save(self, values):
-    print values['external_curl']
     variable_set('external_curl', bool(values['external_curl']))
     return _('Settings saved')
           

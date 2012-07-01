@@ -9,6 +9,7 @@ config.plugins.Facebook.access_token = ConfigText()
 config.plugins.Facebook.expires_on = ConfigText()
 config.plugins.Facebook.external_curl = ConfigYesNo()
 
+from Tools.LoadPixmap import LoadPixmap
 
 def variable_get(name, default = None):
   vals = config.plugins.Facebook.getSavedValue()
@@ -21,6 +22,20 @@ def variable_set(name, value):
   getattr(config.plugins.Facebook, name).setValue(value)
   config.plugins.Facebook.save()
   configfile.save()  
+  
+def downloadImg(img, callback, parms = {}):
+  img_hash = hashlib.md5(img).hexdigest()
+
+  to = '/tmp/' + img_hash + '.' + 'jpg'
+  parms['img'] = to    
+
+  if os.path.exists(to) is True:
+    return LoadPixmap(to)
+        
+  if os.path.exists(to) is False:
+    client.downloadPage(img, to).addCallback(callback, parms)
+      
+  return None  
   
 def FacebookApi():
   access_token = variable_get('access_token')
@@ -57,11 +72,13 @@ def GrabVideoImg(url = '/tmp/facebook.jpg'):
 
   return url
 
-def img_download(img):
+def img_download(img, force_ext = None):
   img_hash = hashlib.md5(img).hexdigest()
-  to = '/tmp/' + img_hash + '.' + url_img_ext(img)
-  print img
-  print to
+  
+  if force_ext is None:
+    force_ext = url_img_ext(img)
+  
+  to = '/tmp/' + img_hash + '.' + force_ext
     
   if os.path.exists(to):
     return to

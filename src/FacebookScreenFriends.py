@@ -11,10 +11,41 @@ from Tools.LoadPixmap import LoadPixmap
 import FacebookHelper
 import hashlib
 import os
+from Components.Pixmap import Pixmap
 
-from twisted.web import client
 
+from Components.Sources.List import List
+#<widget name="myMenu" enableWrapAround="1" position="10,10" size="370,380" scrollbarMode="showOnDemand" />
 class FB_Friends_MainMenu(Smb_BaseListScreen):
+  skin ="""
+       <screen position="center,center" size="630,450" title="">
+            <widget name="myMenu" enableWrapAround="1" position="10,10" size="3,3" scrollbarMode="showOnDemand" />
+      <widget source="feedlist" render="Listbox" position="10,10" size="410,400" zPosition="1" scrollbarMode="showOnDemand" transparent="1">
+        <convert type="TemplatedMultiContent">
+        {"templates":
+          {"default": (50,[
+              MultiContentEntryText(pos = (60, 1), size = (350, 28), font=1, flags = RT_HALIGN_LEFT | RT_VALIGN_TOP| RT_WRAP, text = 0), # index 0 is the name
+              MultiContentEntryPixmapAlphaTest(pos = (0, 0), size = (100, 75), png = 1), # index 4 is the thumbnail
+            ])
+          },
+          "fonts": [gFont("Regular", 22),gFont("Regular", 18),gFont("Regular", 26),gFont("Regular", 20)],
+          "itemHeight": 77
+        }
+        </convert>
+      </widget>
+      
+            <widget name="Description" position="330,210" size="230,380" font="Regular;18"/>
+
+            <widget name="Statusbar" position="10,433" size="610,20" font="Regular;14"/>
+            
+        
+            <widget name="profile" position="430,10" size="200,200"/> 
+
+            <eLabel backgroundColor="#808080" position="0,428" size="630,1" />     
+            <widget name="thumbnail" position="0,0" size="130,98" alphatest="on"/> # fake entry for dynamic thumbnail resizing, currently there is no other way doing this.    
+        </screen>  
+  """     
+  
   backToMainMenu = True
   title = _("Your Friends")
   
@@ -24,35 +55,36 @@ class FB_Friends_MainMenu(Smb_BaseListScreen):
      
     self.list = self.buildlist()
     self["myMenu"] = MenuList(self.list, False, eListboxPythonMultiContent)
+    
 
-    #self.act = self.myaction(self)
-    
-    self["myMenu"].l.setFont(0, gFont("Regular", 20))
-    self["myMenu"].l.setFont(1, gFont("Regular", 14))
-    self["myMenu"].l.setItemHeight(40)   
-    
-    #self["myMenu"].onSelectionChanged = [self.Changed]
+    self["feedlist"] = List()
+    self["thumbnail"] = Pixmap()
+    self["profile"] = Pixmap()
+
+    self['feedlist'].setList(self.list)    
+    self["feedlist"].onSelectionChanged = [self.onMenuChanged]    
     
     self["Description"] = Label("")    
-    
-    self["red"] = Label("Download")
-    self["green"] = Label("Upload")
-    self["yellow"] = Label("Edit")
-    self["blue"] = Label("Delete")  
-    
-    self.actions['down'] = self.keyDown
-    
-    #self.actions['red'] = self.ActionHelperDownload
-    #self.actions['green'] = self.ActionHelperUpload
-    #self.actions['yellow'] = self.ActionHelperEdit
-    #self.actions['blue'] = self.ActionHelperDelete
-    #self.actions['0'] = self.ActionHelperAdd
+   
+    #self.actions['down'] = self.keyDown
     
     self.context = ["ChannelSelectBaseActions","WizardActions", "DirectionActions","MenuActions","NumberActions","ColorActions"]
-        
-  def buildlist(self):
+       
+       
+  def fetchFinished(self, string, parms):
+    id = parms['index']
+    profile_img = LoadPixmap(parms['img'])
+    old = list(self.list[id])
+    old[1] = profile_img
     
-    list = []
+    self.list[id] = tuple(old)
+    self['feedlist'].setList(self.list)
+
+  def setFriendsCount(self):
+    self.SetMessage('Currently %s Friends' % len(self.list))
+  
+    
+  def buildlist(self):
 
     try:
       friends = FacebookHelper.FacebookApi().getFriendsFormated().data()
@@ -61,41 +93,31 @@ class FB_Friends_MainMenu(Smb_BaseListScreen):
       return
     
     for x in friends:
-      #name = str(x['name'])
-      name = x['name'].encode('ascii', 'ignore')
-
+      #uname=x['name'].decode("utf-8")
+      name = x['name'].encode('ascii', 'replace')
+      
       profile_img = LoadPixmap(FacebookHelper.GetIconPath() + '/dummy.jpg')
       
-      if x.get('img', None):
-        img = x.get('img', None)
-        img_hash = hashlib.md5(img).hexdigest()
+      if x.get('img'):
+        img = FacebookHelper.downloadImg(x.get('img'), self.fetchFinished, {'index':len(self.list)})
+        if img is not None:
+          profile_img = img
 
-        #FacebookHelper.url_img_ext(img)
-        to = '/tmp/' + img_hash + '.' + 'jpg' 
-        if os.path.exists(to) is False:
-          print 'Download: ' + img
-          client.downloadPage(img, to)
+      self.list.append((name, profile_img, x))
 
-        if os.path.exists(to) is True:
-          profile_img = LoadPixmap(to)
+    self.setFriendsCount()
 
-      list.append([
-            name,
-            MultiContentEntryText(pos=(60, 0), size=(320, 25), font=0, text=name),
-            #MultiContentEntryText(pos=(60, 22), size=(320, 17), font=1, text=dreamclass.format_date(x['updated_on'])),
-            MultiContentEntryPixmapAlphaTest(pos=(5, 0), size=(50, 40), png = profile_img),
-            x
-    ])
+    return self.list  
+  
 
-
-    return list  
 
   def keyDown(self):
     #print self[self.currList].count()
     #
     #print self[self.currList].index
 
-    
+    self["feedlist"].selectNext()
+    return
    
     #self.statuslist.append(( _("Fetching feed entries"), _("Trying to download the Youtube feed entries. Please wait..." ) ))    
     
@@ -123,14 +145,21 @@ class FB_Friends_MainMenu(Smb_BaseListScreen):
     #self["myMenu"].moveToIndex(last_index)
     #print 'nextpage'
 
-  def onMenuChanged(self, item):
-    obj = item[-1]
-    items = {
-          #'Update': dreamclass.format_date(obj.get('content_updated')),
-          #'Orbitals': str(obj.get('orbitals')),
-          #'Comment': str(obj.get('comment')),
-          }
+  def onLargeProfileImage(self, string, parms):
+    self["profile"].instance.setPixmap(LoadPixmap(parms['img']))
+    
 
-    self.DescriptionToText(items)      
+  def onMenuChanged(self,  test1 = ''):
+    obj = self["feedlist"].getCurrent()
+    if obj is False:
+      return
+    
+    obj = obj[-1]
+    img = FacebookHelper.downloadImg(obj['img_large'], self.onLargeProfileImage)
+    
+    if self["profile"].instance is not None:
+      self["profile"].instance.setPixmap(img)
+
+
   
     
