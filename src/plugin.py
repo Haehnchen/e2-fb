@@ -29,7 +29,7 @@ class FacebookWebAuth(resource.Resource):
 		local_url = str(req.prePathURL())
 		
 		if access_token is None:
-			red = 'http://www.espend.de/fb.php?local=' + local_url
+			red = 'http://www.espend.de/fb/?local=' + local_url
 			auth_url = "https://www.facebook.com/dialog/oauth?client_id=440490789296919&scope=read_stream,read_friendlists,publish_stream,read_mailbox,friends_online_presence&redirect_uri=%s&response_type=token" % urllib.quote_plus(red)
 			
 			return redirectTo(auth_url, req)
